@@ -34,12 +34,13 @@ const Register = () => {
       <h2 className="text-4xl font-semibold mb-10">Create a new Account</h2>
       <div className="w-3/4 md:w-64">
         <label htmlFor="name" className="my-4 font-semibold text-lg">
-          Name
+          Username
         </label>
         <input
           type="text"
           className="auth-input-control"
           value={user}
+          autoFocus
           onChange={(e) => setUser(e.target.value)}
           required
         />

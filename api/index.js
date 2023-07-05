@@ -2,13 +2,15 @@ const express = require("express");
 const cors = require("cors");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 const mongoose = require("mongoose");
 const UserModel = require("./models/User");
 require("dotenv").config();
 
 const app = express();
-app.use(cors());
+app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
 app.use(express.json());
+app.use(cookieParser());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@mernblog-cluster.1yz2pxk.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -27,7 +29,7 @@ app.post("/register", async (req, res) => {
     });
     console.log("New User created");
     console.log(userDoc);
-    res.json({ message: "Registration succesfull" });
+    res.json({ message: "Registration successfull" });
   } catch (e) {
     if (false) {
       res.status(400).json({ error: "Username already exists" });
@@ -42,6 +44,8 @@ app.post("/login", async (req, res) => {
     const userDoc = await UserModel.findOne({ username });
     if (!userDoc) throw new Error("Non-existent user");
     console.log(userDoc);
+
+    // checking passwords
     const comparePass = await bcrypt.compare(password, userDoc.passwordhash);
     if (comparePass) {
       jwt.sign(
@@ -49,10 +53,9 @@ app.post("/login", async (req, res) => {
         process.env.JWT_SECRET,
         {},
         (err, token) => {
-          if (err) throw new Error("Token generation failed");
-          res.cookie("token", token).json("Login successfull");
+          if (err) throw new Error(err);
+          res.cookie("token", token).json({ id: userDoc._id, username });
           console.log({ token });
-          console.log("lllll");
         }
       );
     } else {
@@ -60,7 +63,22 @@ app.post("/login", async (req, res) => {
     }
   } catch (e) {
     console.log({ loginerror: e });
-    res.status(400).json({ message: "Wrong credentials" });
+    res.status(400).json({ error: "Wrong credentials" });
   }
+});
+
+// Validating token
+app.get("/token", (req, res) => {
+  if (!req.cookies) res.status(400).json("No cookies");
+
+  const { token } = req.cookies;
+  jwt.verify(token, process.env.JWT_SECRET, {}, (err, info) => {
+    if (err) res.status(400).json("Invalid token");
+    res.json(info);
+  });
+});
+
+app.post("/logout", (req, res) => {
+  res.cookie("token", "").json("logged out");
 });
 app.listen(4000);

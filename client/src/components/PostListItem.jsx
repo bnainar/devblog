@@ -6,7 +6,7 @@ const PostListItem = () => {
           <img
             src="https://images.unsplash.com/photo-1685648042049-6138b9d12905?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1157&q=80"
             alt=""
-            className="w-full h-40 object-cover md:h-40 md:w-48 rounded-lg bg-slate-300"
+            className="w-full h-40 object-cover md:h-40 md:w-48 rounded-lg bg-slate-300 shadow-md"
           ></img>
         </div>
         <div className="py-3 md:px-5 md:pt-0">

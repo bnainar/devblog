@@ -1,6 +1,32 @@
+import { useContext, useEffect } from "react";
 import { Link } from "react-router-dom";
+import toast, { Toaster } from "react-hot-toast";
+import { UserContext } from "../context/UserContext";
 
 const Header = () => {
+  const { userInfo, setUserInfo } = useContext(UserContext);
+  useEffect(() => {
+    fetch("http://localhost:4000/token", {
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((userInfo) => {
+        setUserInfo(userInfo);
+      });
+  }, []);
+
+  const logout = async () => {
+    fetch("http://localhost:4000/logout", {
+      credentials: "include",
+      method: "POST",
+    }).then(() => {
+      setUserInfo(null);
+      toast.success("Logged out");
+    });
+  };
+
+  const username = userInfo?.username;
+
   return (
     <header className="flex justify-between p-3">
       <Link
@@ -9,19 +35,41 @@ const Header = () => {
       >
         MERN Blog
       </Link>
+      <Toaster />
       <nav className="flex gap-5">
-        <Link
-          to="/register"
-          className="hover:underline hover:decoration-green-500 hover:decoration-2"
-        >
-          Register
-        </Link>
-        <Link
-          to="/login"
-          className="hover:underline hover:decoration-purple-500 hover:decoration-2"
-        >
-          Login
-        </Link>
+        {username && (
+          <>
+            <Link
+              to="/new"
+              className="hover:underline hover:decoration-orange-400 hover:decoration-2"
+            >
+              Create new Post
+            </Link>
+            <span
+              onClick={logout}
+              className="hover:underline hover:decoration-red-500 hover:decoration-2 cursor-pointer"
+            >
+              {username}
+              <span className="text-slate-500"> (Logout)</span>
+            </span>
+          </>
+        )}
+        {!username && (
+          <>
+            <Link
+              to="/register"
+              className="hover:underline hover:decoration-green-500 hover:decoration-2"
+            >
+              Register
+            </Link>
+            <Link
+              to="/login"
+              className="hover:underline hover:decoration-purple-500 hover:decoration-2"
+            >
+              Login
+            </Link>
+          </>
+        )}
       </nav>
     </header>
   );
