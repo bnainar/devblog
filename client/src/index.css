@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@layer components{
+    body{
+        @apply bg-gray-200;
+    }
+    .auth-input-control{
+        @apply py-1 px-2 mt-2 mb-2 w-full block 
+        ring-1 ring-slate-500 
+        rounded-sm hover:shadow-inner
+        
+        focus:shadow-sm focus:ring-4 
+        focus:outline-none
+        focus:ring-purple-400
+
+        invalid:ring-red-400
+        invalid:focus:ring-red-400;
+    }
+}
