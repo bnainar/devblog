@@ -15,19 +15,22 @@ const Login = () => {
       toast.error("Enter valid credentials");
       return null;
     }
-
-    const res = await fetch("http://localhost:4000/login", {
-      method: "POST",
-      body: JSON.stringify({ username: user, password: pass }),
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-    });
-    console.log(res);
-    if (res.ok) {
-      setUserInfo({ username: user });
-      navigate("/");
-    } else {
-      toast.error("Wrong Credentials");
+    try {
+      const res = await fetch("http://localhost:4000/login", {
+        method: "POST",
+        body: JSON.stringify({ username: user, password: pass }),
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+      });
+      console.log(res);
+      if (res.ok) {
+        setUserInfo({ username: user });
+        navigate("/");
+      } else {
+        toast.error("Wrong Credentials");
+      }
+    } catch (error) {
+      toast.error("You're offline");
     }
   };
   return (

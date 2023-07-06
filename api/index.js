@@ -4,13 +4,17 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const mongoose = require("mongoose");
+const multer = require("multer");
+const fs = require("fs");
 const UserModel = require("./models/User");
+const PostModel = require("./models/Post");
 require("dotenv").config();
 
 const app = express();
 app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
 app.use(express.json());
 app.use(cookieParser());
+const upload = multer({ dest: "uploads" });
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@mernblog-cluster.1yz2pxk.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -81,4 +85,25 @@ app.get("/token", (req, res) => {
 app.post("/logout", (req, res) => {
   res.cookie("token", "").json("logged out");
 });
+
+app.post("/post", upload.single("cover"), async (req, res) => {
+  const { originalname, path } = req.file;
+  const parts = originalname.split(".");
+  const newName = originalname + "." + parts[parts.length - 1];
+  fs.renameSync(path, newName);
+  const { title, subtitle, content } = req.body;
+  const postDoc = await PostModel.create({
+    title,
+    subtitle,
+    content,
+    cover: newName,
+  });
+  res.status(200);
+});
+
+app.get("/post", async (_, res) => {
+  const posts = await PostModel.find();
+  res.json(posts);
+});
+
 app.listen(4000);

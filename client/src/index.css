@@ -13,9 +13,15 @@
         
         focus:shadow-sm focus:ring-4 
         focus:outline-none
-        focus:ring-purple-400
+        focus:ring-purple-400;
 
-        invalid:ring-red-400
-        invalid:focus:ring-red-400;
+        /* invalid:ring-red-400
+        invalid:focus:ring-red-400; */
+    }
+    .file-input{
+        @apply file:bg-green-200 block
+        file:rounded-full file:border-0 file:px-4 file:py-2
+        file:mr-4 file:font-semibold file:text-green-800 file:cursor-pointer
+        hover:file:bg-green-400 hover:file:text-white;
     }
 }

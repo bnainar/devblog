@@ -10,19 +10,23 @@ const Header = () => {
       credentials: "include",
     })
       .then((res) => res.json())
-      .then((userInfo) => {
-        setUserInfo(userInfo);
-      });
-  }, []);
+      .then((data) => {
+        setUserInfo(data);
+      })
+      .catch(() => toast.error("You're offline"));
+  }, [setUserInfo]);
 
   const logout = async () => {
-    fetch("http://localhost:4000/logout", {
-      credentials: "include",
-      method: "POST",
-    }).then(() => {
+    try {
+      await fetch("http://localhost:4000/logout", {
+        credentials: "include",
+        method: "POST",
+      });
       setUserInfo(null);
       toast.success("Logged out");
-    });
+    } catch (error) {
+      toast.error("You're offline");
+    }
   };
 
   const username = userInfo?.username;
