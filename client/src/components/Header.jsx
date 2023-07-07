@@ -32,12 +32,12 @@ const Header = () => {
   const username = userInfo?.username;
 
   return (
-    <header className="flex justify-between p-3">
+    <header className="flex justify-between p-3 text-slate-300">
       <Link
         to="/"
-        className="font-bold hover:underline hover:decoration-slate-900 hover:decoration-2"
+        className="font-bold hover:underline hover:decoration-slate-300 hover:decoration-2"
       >
-        MERN Blog
+        DevBlog
       </Link>
       <Toaster />
       <nav className="flex gap-5">

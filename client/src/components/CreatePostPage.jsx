@@ -1,4 +1,4 @@
-import ReactQuill from "react-quill";
+import MDEditor from "@uiw/react-md-editor";
 import { useNavigate } from "react-router-dom";
 import "react-quill/dist/quill.snow.css";
 import { useState } from "react";
@@ -6,7 +6,23 @@ import { useState } from "react";
 function CreatePostPage() {
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
-  const [content, setContent] = useState("");
+  const [content, setContent] = useState(
+    `
+  An h1 header
+============
+
+Paragraphs are separated by a blank line.
+
+2nd paragraph. *Italic*, **bold**, and \`monospace\`. 
+Code blocks are formatted like this
+\`\`\`java
+public int gcd(int a, int b) {
+  if (b==0) return a;
+  return gcd(b,a%b);
+}
+\`\`\`
+  `
+  );
   const [files, setFiles] = useState("");
   const navigate = useNavigate();
 
@@ -32,10 +48,12 @@ function CreatePostPage() {
   return (
     <>
       <form
-        className="w-full flex items-center flex-col"
+        className="w-full flex items-center flex-col text-slate-200"
         onSubmit={handleNewPost}
       >
-        <h2 className="text-3xl font-semibold mb-10">Add new Post</h2>
+        <h2 className="text-3xl font-semibold mb-10 text-slate-100">
+          Add new Post
+        </h2>
         <div className="w-3/4">
           <label htmlFor="name" className="my-4 font-semibold text-lg">
             Title
@@ -72,17 +90,12 @@ function CreatePostPage() {
           />
         </div>
         <div className="w-3/4 mt-5 bg-white">
-          <ReactQuill
-            theme="snow"
-            value={content}
-            onChange={(val) => setContent(val)}
-            className="ring-1 ring-slate-500 rounded-sm"
-          />
+          <MDEditor value={content} onChange={setContent} height={400} />
         </div>
         <input
           type="submit"
           value="Submit"
-          className="bg-green-600 text-white font-semibold mt-4 py-2 px-5 w-3/4 md:w-64 rounded-md shadow-sm hover:shadow-lg hover:bg-green-700 cursor-pointer"
+          className="bg-green-600 text-white bg-blend-lighten font-semibold mb-7 mt-10 py-2 px-5 w-3/4 md:w-64 rounded-md shadow-sm hover:shadow-lg cursor-pointer"
         />
       </form>
     </>

@@ -6,7 +6,7 @@ import Login from "./components/Login";
 import Register from "./components/Register";
 import { UserContextProvider } from "./context/UserContext";
 import CreatePostPage from "./components/CreatePostPage";
-import ViewPost from "./components/ViewPost";
+import ViewPost from "./components/ViewPost/ViewPost";
 
 function App() {
   return (

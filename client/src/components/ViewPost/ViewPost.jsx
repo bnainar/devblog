@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { Toaster } from "react-hot-toast";
+import MDEditor from "@uiw/react-md-editor";
 import { useNavigate, useParams } from "react-router-dom";
 import TimeAgo from "react-timeago";
+import ViewPostLoading from "./loading";
 
 function ViewPost() {
   const { id } = useParams();
@@ -13,20 +15,22 @@ function ViewPost() {
     setLoading(true);
     fetch(`http://localhost:4000/post/${id}`)
       .then((res) => res.json())
-      .then((data) => setPostInfo(data))
+      .then((data) => {
+        setPostInfo(data);
+        setLoading(false);
+      })
       .catch(() => navigate("/"));
-    setLoading(false);
   }, [id, navigate]);
   return (
     <>
       <Toaster />
-      {loading && <article>loading...</article>}
+      {loading && <ViewPostLoading />}
       {postInfo && (
         <article className="px-2">
-          <h1 className="text-3xl font-semibold text-center mb-5">
+          <h1 className="text-3xl text-slate-200 font-semibold text-center mb-5">
             {postInfo.title}
           </h1>
-          <span className="text-xl text-slate-600 text-center mb-5">
+          <span className="text-xl text-slate-500 text-center block mb-5">
             {postInfo.subtitle}
           </span>
           <img
@@ -40,6 +44,13 @@ function ViewPost() {
               <TimeAgo date={postInfo.createdAt} />
             </time>
           </div>
+          <main className="md:px-10 mt-5 px-5">
+            <MDEditor.Markdown
+              source={postInfo.content}
+              style={{ whiteSpace: "pre-wrap" }}
+              className="px-5"
+            />
+          </main>
         </article>
       )}
     </>

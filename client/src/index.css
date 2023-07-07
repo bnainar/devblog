@@ -3,25 +3,23 @@
 @tailwind utilities;
 @layer components{
     body{
-        @apply bg-slate-200;
+        background-color: #0d1117;
         scrollbar-color: rebeccapurple green;
     }    
     .auth-input-control{
         @apply py-1 px-2 mt-2 mb-2 w-full block 
+        bg-slate-900 text-white
         ring-1 ring-slate-500
         rounded-sm hover:shadow-inner
         
         focus:shadow-sm focus:ring-4 
         focus:outline-none
-        focus:ring-purple-400;
-
-        /* invalid:ring-red-400
-        invalid:focus:ring-red-400; */
+        focus:ring-slate-300;
     }
     .file-input{
-        @apply file:bg-green-200 block
+        @apply file:bg-slate-200 block
         file:rounded-full file:border-0 file:px-4 file:py-2
-        file:mr-4 file:font-semibold file:text-green-800 file:cursor-pointer
-        hover:file:bg-green-400 hover:file:text-white;
+        file:mr-4 file:font-semibold file:text-slate-800 file:cursor-pointer
+        hover:file:bg-slate-600 hover:file:text-white;
     }
 }
