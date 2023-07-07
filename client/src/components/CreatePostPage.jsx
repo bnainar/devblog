@@ -1,5 +1,4 @@
 import ReactQuill from "react-quill";
-import { Toaster } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import "react-quill/dist/quill.snow.css";
 import { useState } from "react";
@@ -23,6 +22,7 @@ function CreatePostPage() {
     const res = await fetch("http://localhost:4000/post", {
       method: "POST",
       body: formdata,
+      credentials: "include",
     });
     if (res.ok) {
       navigate("/");
@@ -31,7 +31,6 @@ function CreatePostPage() {
 
   return (
     <>
-      <Toaster />
       <form
         className="w-full flex items-center flex-col"
         onSubmit={handleNewPost}

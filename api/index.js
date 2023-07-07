@@ -14,7 +14,8 @@ const app = express();
 app.use(cors({ credentials: true, origin: "http://localhost:3000" }));
 app.use(express.json());
 app.use(cookieParser());
-const upload = multer({ dest: "uploads" });
+app.use("/uploads", express.static(__dirname + "/uploads"));
+const upload = multer({ dest: "uploads/" });
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@mernblog-cluster.1yz2pxk.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -73,7 +74,7 @@ app.post("/login", async (req, res) => {
 
 // Validating token
 app.get("/token", (req, res) => {
-  if (!req.cookies) res.status(400).json("No cookies");
+  if (!req.cookies) res.status(400).json("no cookies");
 
   const { token } = req.cookies;
   jwt.verify(token, process.env.JWT_SECRET, {}, (err, info) => {
@@ -82,28 +83,50 @@ app.get("/token", (req, res) => {
   });
 });
 
-app.post("/logout", (req, res) => {
+app.post("/logout", (_, res) => {
   res.cookie("token", "").json("logged out");
 });
 
-app.post("/post", upload.single("cover"), async (req, res) => {
+app.post("/post", upload.single("cover"), (req, res) => {
+  if (!req.cookies) res.status(400).json("no cookies");
   const { originalname, path } = req.file;
   const parts = originalname.split(".");
-  const newName = originalname + "." + parts[parts.length - 1];
+  const newName = path + "." + parts[parts.length - 1];
   fs.renameSync(path, newName);
-  const { title, subtitle, content } = req.body;
-  const postDoc = await PostModel.create({
-    title,
-    subtitle,
-    content,
-    cover: newName,
+
+  const { token } = req.cookies;
+  jwt.verify(token, process.env.JWT_SECRET, {}, async (err, info) => {
+    if (err) res.status(400).json("Invalid token");
+
+    const { title, subtitle, content } = req.body;
+    const postDoc = await PostModel.create({
+      author: info.id,
+      title,
+      subtitle,
+      content,
+      cover: newName,
+    });
+    res.status(200).json("ok");
   });
-  res.status(200);
 });
 
 app.get("/post", async (_, res) => {
-  const posts = await PostModel.find();
+  const posts = await PostModel.find()
+    .populate("author", ["username"])
+    .sort({ createdAt: -1 })
+    .limit(10);
   res.json(posts);
+});
+app.get("/post/:id", async (req, res) => {
+  const { id } = req.params;
+  try {
+    const postDoc = await PostModel.findById(id).populate("author", [
+      "username",
+    ]);
+    res.json(postDoc);
+  } catch (error) {
+    res.status(404);
+  }
 });
 
 app.listen(4000);

@@ -13,7 +13,7 @@ const Header = () => {
       .then((data) => {
         setUserInfo(data);
       })
-      .catch(() => toast.error("You're offline"));
+      .catch(() => toast.error("Unable to verify token"));
   }, [setUserInfo]);
 
   const logout = async () => {
