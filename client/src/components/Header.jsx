@@ -6,7 +6,7 @@ import { UserContext } from "../context/UserContext";
 const Header = () => {
   const { userInfo, setUserInfo } = useContext(UserContext);
   useEffect(() => {
-    fetch("http://localhost:4000/token", {
+    fetch("http://localhost:4000/auth/token", {
       credentials: "include",
     })
       .then((res) => res.json())
@@ -18,7 +18,7 @@ const Header = () => {
 
   const logout = async () => {
     try {
-      await fetch("http://localhost:4000/logout", {
+      await fetch("http://localhost:4000/auth/logout", {
         credentials: "include",
         method: "POST",
       });

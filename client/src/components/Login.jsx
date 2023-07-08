@@ -16,7 +16,7 @@ const Login = () => {
       return null;
     }
     try {
-      const res = await fetch("http://localhost:4000/login", {
+      const res = await fetch("http://localhost:4000/auth/login", {
         method: "POST",
         body: JSON.stringify({ username: user, password: pass }),
         headers: { "Content-Type": "application/json" },
@@ -36,10 +36,12 @@ const Login = () => {
   return (
     <>
       <form
-        className="w-full flex items-center flex-col"
+        className="w-full flex items-center flex-col text-slate-200"
         onSubmit={handleSubmit}
       >
-        <h2 className="text-4xl font-semibold mb-10">Login to Continue</h2>
+        <h2 className="text-4xl font-semibold mb-10 text-slate-100">
+          Login to Continue
+        </h2>
         <div className="w-3/4 md:w-64">
           <label htmlFor="name" className="my-4 font-semibold text-lg">
             Name

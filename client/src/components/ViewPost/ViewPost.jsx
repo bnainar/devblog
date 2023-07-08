@@ -36,6 +36,7 @@ function ViewPost() {
           <img
             src={`http://localhost:4000/${postInfo.cover}`}
             alt="Post cover"
+            onError={(event) => (event.target.style.display = "none")}
             className="rounded-lg shadow-sm md:max-h-72 m-auto"
           />
           <div className="flex gap-5 justify-center text-slate-600 mt-5">

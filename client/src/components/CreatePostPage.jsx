@@ -1,9 +1,13 @@
 import MDEditor from "@uiw/react-md-editor";
 import { useNavigate } from "react-router-dom";
+import { useState, useContext } from "react";
+import { UserContext } from "../context/UserContext";
 import "react-quill/dist/quill.snow.css";
-import { useState } from "react";
 
 function CreatePostPage() {
+  const { userInfo } = useContext(UserContext);
+  const navigate = useNavigate();
+  if (userInfo == null) navigate("/");
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const [content, setContent] = useState(
@@ -24,7 +28,6 @@ public int gcd(int a, int b) {
   `
   );
   const [files, setFiles] = useState("");
-  const navigate = useNavigate();
 
   const handleNewPost = async (e) => {
     e.preventDefault();
@@ -35,14 +38,13 @@ public int gcd(int a, int b) {
     formdata.append("content", content);
     formdata.append("cover", files[0]);
 
-    const res = await fetch("http://localhost:4000/post", {
+    fetch("http://localhost:4000/post/new", {
       method: "POST",
       body: formdata,
       credentials: "include",
-    });
-    if (res.ok) {
-      navigate("/");
-    }
+    })
+      .then((res) => res.json())
+      .then((data) => navigate(`/post/${data.id}`));
   };
 
   return (

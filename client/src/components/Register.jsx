@@ -15,7 +15,7 @@ const Register = () => {
       return null;
     }
     try {
-      const data = await fetch("http://localhost:4000/register", {
+      const data = await fetch("http://localhost:4000/auth/register", {
         method: "POST",
         body: JSON.stringify({ username: user, password: pass }),
         headers: { "Content-Type": "application/json" },
@@ -35,10 +35,12 @@ const Register = () => {
     <>
       <Toaster />
       <form
-        className="w-full flex items-center flex-col"
+        className="w-full flex items-center flex-col text-slate-200"
         onSubmit={handleRegister}
       >
-        <h2 className="text-4xl font-semibold mb-10">Create a new Account</h2>
+        <h2 className="text-4xl font-semibold mb-10 text-slate-100">
+          Create a new Account
+        </h2>
         <div className="w-3/4 md:w-64">
           <label htmlFor="name" className="my-4 font-semibold text-lg">
             Username
