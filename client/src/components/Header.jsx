@@ -1,35 +1,32 @@
-import { useContext, useEffect } from "react";
+import axios from "axios";
 import { Link } from "react-router-dom";
-import toast, { Toaster } from "react-hot-toast";
-import { UserContext } from "../context/UserContext";
+import { toast } from "react-hot-toast";
+import { useQueryClient } from "@tanstack/react-query";
+import { useTokenValidation } from "./helpers/useTokenValidation";
 
 const Header = () => {
-  const { userInfo, setUserInfo } = useContext(UserContext);
-  useEffect(() => {
-    fetch("http://localhost:4000/auth/token", {
-      credentials: "include",
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setUserInfo(data);
-      })
-      .catch(() => toast.error("Unable to verify token"));
-  }, [setUserInfo]);
+  const queryClient = useQueryClient();
+
+  const tokenQuery = useTokenValidation();
+  if (tokenQuery.isSuccess) console.log("valid token");
+  if (tokenQuery.isError) console.log("invalid token");
 
   const logout = async () => {
     try {
-      await fetch("http://localhost:4000/auth/logout", {
-        credentials: "include",
-        method: "POST",
+      await axios({
+        url: "/auth/logout",
+        method: "post",
+        withCredentials: true,
       });
-      setUserInfo(null);
+      queryClient.invalidateQueries({ queryKey: ["userInfo"] });
       toast.success("Logged out");
     } catch (error) {
-      toast.error("You're offline");
+      toast.error("Unable to logout");
+      console.log(error);
     }
   };
 
-  const username = userInfo?.username;
+  const username = tokenQuery.data?.username;
 
   return (
     <header className="flex justify-between p-3 text-slate-300">
@@ -39,9 +36,11 @@ const Header = () => {
       >
         DevBlog
       </Link>
-      <Toaster />
       <nav className="flex gap-5">
-        {username && (
+        {(tokenQuery.isLoading ||
+          tokenQuery.isRefetching ||
+          tokenQuery.isFetching) && <div>checking token...</div>}
+        {tokenQuery.isSuccess && (
           <>
             <Link
               to="/new"
@@ -50,7 +49,7 @@ const Header = () => {
               Create new Post
             </Link>
             <span
-              onClick={logout}
+              onClick={() => logout()}
               className="hover:underline hover:decoration-red-500 hover:decoration-2 cursor-pointer"
             >
               {username}
@@ -58,7 +57,7 @@ const Header = () => {
             </span>
           </>
         )}
-        {!username && (
+        {tokenQuery.isError && (
           <>
             <Link
               to="/register"

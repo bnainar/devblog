@@ -9,7 +9,7 @@ const PostListItem = ({ _id, title, subtitle, cover, createdAt, author }) => {
             <img
               src={`http://localhost:4000/${cover}`}
               alt=""
-              className="w-full h-40 object-cover md:h-40 md:w-56 rounded-lg bg-slate-300 shadow-md"
+              className="w-full h-40 object-cover md:h-40 md:w-56 rounded-lg bg-slate-500 border-0 shadow-md"
             ></img>
           </div>
           <div className="py-3 md:px-5 md:pt-0 md:flex-1">

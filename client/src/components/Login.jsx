@@ -1,43 +1,42 @@
-import { useContext, useState } from "react";
+import axios from "axios";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
-import { UserContext } from "../context/UserContext";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Login = () => {
   const [user, setUser] = useState("");
   const [pass, setPass] = useState("");
-  const { setUserInfo } = useContext(UserContext);
   const navigate = useNavigate();
-  const handleSubmit = async (e) => {
+  const queryClient = useQueryClient();
+
+  const handleLogin = async (e) => {
     e.preventDefault();
 
     if (user.length < 4 || pass.length < 6) {
       toast.error("Enter valid credentials");
-      return null;
+      // throw new Error("invalid creds");
+      return;
     }
     try {
-      const res = await fetch("http://localhost:4000/auth/login", {
-        method: "POST",
-        body: JSON.stringify({ username: user, password: pass }),
+      await axios({
+        url: "/auth/login",
+        method: "post",
+        data: JSON.stringify({ username: user, password: pass }),
+        withCredentials: true,
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
       });
-      console.log(res);
-      if (res.ok) {
-        setUserInfo({ username: user });
-        navigate("/");
-      } else {
-        toast.error("Wrong Credentials");
-      }
+      queryClient.invalidateQueries({ queryKey: ["userInfo"] });
+      navigate("/");
     } catch (error) {
-      toast.error("You're offline");
+      toast.error("Wrong credentials");
     }
   };
   return (
     <>
       <form
         className="w-full flex items-center flex-col text-slate-200"
-        onSubmit={handleSubmit}
+        onSubmit={handleLogin}
       >
         <h2 className="text-4xl font-semibold mb-10 text-slate-100">
           Login to Continue

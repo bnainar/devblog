@@ -1,12 +1,14 @@
 import { useState } from "react";
-import { Toaster, toast } from "react-hot-toast";
+import { Toaster } from "react-hot-toast";
+import axios from "axios";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Register = () => {
   const [user, setUser] = useState("");
   const [pass, setPass] = useState("");
 
   const [usernameErr, setUsernameErr] = useState("");
-
+  const queryClient = useQueryClient();
   const handleRegister = async (e) => {
     e.preventDefault();
 
@@ -15,20 +17,17 @@ const Register = () => {
       return null;
     }
     try {
-      const data = await fetch("http://localhost:4000/auth/register", {
-        method: "POST",
-        body: JSON.stringify({ username: user, password: pass }),
+      await axios({
+        url: "/auth/register",
+        method: "post",
+        data: JSON.stringify({ username: user, password: pass }),
+        withCredentials: true,
         headers: { "Content-Type": "application/json" },
-      }).then((res) => res.json());
-
-      console.log(data);
-      if (data.code === 11000) {
-        setUsernameErr("Username already exists");
-      } else {
-        console.error(data._message);
-      }
+      });
+      queryClient.invalidateQueries({ queryKey: ["userInfo"] });
+      // navigate("/");
     } catch (error) {
-      toast.error("You're offline");
+      console.log({ error });
     }
   };
   return (

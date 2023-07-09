@@ -7,7 +7,7 @@ import { verifyjwt } from "../middlewares/verifyjwt.js";
 const upload = multer({ dest: "uploads/" });
 const router = express.Router();
 
-router.post("/new", [verifyjwt, upload.single("cover")], async (req, res) => {
+router.post("/", [verifyjwt, upload.single("cover")], async (req, res) => {
   const { originalname, path } = req.file;
   const parts = originalname.split(".");
   const newName = path + "." + parts[parts.length - 1];
@@ -24,6 +24,11 @@ router.post("/new", [verifyjwt, upload.single("cover")], async (req, res) => {
   res.status(200).json({ id: _id });
 });
 
+router.delete("/:id", verifyjwt, async (req, res) => {
+  console.log(req.userInfo);
+  res.status(200);
+});
+
 router.get("/", async (_, res) => {
   const posts = await PostModel.find()
     .populate("author", ["username"])
@@ -38,9 +43,11 @@ router.get("/:id", async (req, res) => {
     const postDoc = await PostModel.findById(id).populate("author", [
       "username",
     ]);
+    if (postDoc == null) throw new Error();
+    console.log(postDoc);
     res.json(postDoc);
   } catch (error) {
-    res.status(404);
+    res.status(404).json("Post not found");
   }
 });
 

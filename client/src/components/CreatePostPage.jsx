@@ -1,57 +1,59 @@
+import axios from "axios";
+import { useState } from "react";
 import MDEditor from "@uiw/react-md-editor";
 import { useNavigate } from "react-router-dom";
-import { useState, useContext } from "react";
-import { UserContext } from "../context/UserContext";
-import "react-quill/dist/quill.snow.css";
+import toast, { Toaster } from "react-hot-toast";
+import { sampleContent } from "./helpers/sampleContent";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 function CreatePostPage() {
-  const { userInfo } = useContext(UserContext);
   const navigate = useNavigate();
-  if (userInfo == null) navigate("/");
+
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
-  const [content, setContent] = useState(
-    `
-  An h1 header
-============
-
-Paragraphs are separated by a blank line.
-
-2nd paragraph. *Italic*, **bold**, and \`monospace\`. 
-Code blocks are formatted like this
-\`\`\`java
-public int gcd(int a, int b) {
-  if (b==0) return a;
-  return gcd(b,a%b);
-}
-\`\`\`
-  `
-  );
+  const [content, setContent] = useState(sampleContent);
   const [files, setFiles] = useState("");
 
-  const handleNewPost = async (e) => {
-    e.preventDefault();
+  const queryClient = useQueryClient();
 
+  const newPostMutation = (formdata) => {
+    return axios({
+      url: "/post",
+      method: "post",
+      data: formdata,
+      withCredentials: true,
+    });
+  };
+
+  const postMutation = useMutation({
+    mutationFn: newPostMutation,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["posts"] });
+    },
+  });
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
     const formdata = new FormData();
     formdata.append("title", title);
     formdata.append("subtitle", subtitle);
     formdata.append("content", content);
     formdata.append("cover", files[0]);
-
-    fetch("http://localhost:4000/post/new", {
-      method: "POST",
-      body: formdata,
-      credentials: "include",
-    })
-      .then((res) => res.json())
-      .then((data) => navigate(`/post/${data.id}`));
+    postMutation.mutate(formdata);
   };
 
+  if (postMutation.isSuccess) {
+    navigate(`/post/${postMutation.data.data.id}`);
+  }
+  if (postMutation.isError) {
+    toast.error("Unable to add post");
+  }
   return (
     <>
+      <Toaster />
       <form
         className="w-full flex items-center flex-col text-slate-200"
-        onSubmit={handleNewPost}
+        onSubmit={(e) => handleSubmit(e)}
       >
         <h2 className="text-3xl font-semibold mb-10 text-slate-100">
           Add new Post
@@ -97,6 +99,7 @@ public int gcd(int a, int b) {
         <input
           type="submit"
           value="Submit"
+          disabled={postMutation.isLoading}
           className="bg-green-600 text-white bg-blend-lighten font-semibold mb-7 mt-10 py-2 px-5 w-3/4 md:w-64 rounded-md shadow-sm hover:shadow-lg cursor-pointer"
         />
       </form>

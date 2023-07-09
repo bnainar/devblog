@@ -1,17 +1,23 @@
 import PostListItem from "./PostListItem";
-import { useEffect, useState } from "react";
 import toast, { Toaster } from "react-hot-toast";
+import axios from "axios";
+import { useQuery } from "@tanstack/react-query";
 
 const HomePage = () => {
-  const [posts, setPosts] = useState([]);
-  useEffect(() => {
-    fetch("http://localhost:4000/post")
-      .then((res) => res.json())
-      .then((data) => {
-        setPosts(data);
-      })
-      .catch(() => toast.error("Unable to fetch posts"));
-  }, []);
+  const getPosts = async () => {
+    try {
+      const { data } = await axios({ url: "/post" });
+      return data;
+    } catch (error) {
+      toast.error("Unable to fetch posts");
+      console.log({ error });
+    }
+  };
+  const { data: posts, isLoading } = useQuery({
+    queryKey: ["posts"],
+    queryFn: getPosts,
+  });
+  if (isLoading) return <div className="text-white">Loading...</div>;
   return (
     <>
       <Toaster />
