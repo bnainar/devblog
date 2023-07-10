@@ -1,6 +1,6 @@
-import express from "express";
-import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
+import express from "express";
 import UserModel from "../models/User.js";
 import { verifyjwt } from "../middlewares/verifyjwt.js";
 

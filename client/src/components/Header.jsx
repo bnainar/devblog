@@ -2,14 +2,10 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { useTokenValidation } from "./helpers/useTokenValidation";
+import { useTokenValidation } from "./helpers/queries/useTokenValidation";
 
 const Header = () => {
   const queryClient = useQueryClient();
-
-  const tokenQuery = useTokenValidation();
-  if (tokenQuery.isSuccess) console.log("valid token");
-  if (tokenQuery.isError) console.log("invalid token");
 
   const logout = async () => {
     try {
@@ -18,13 +14,13 @@ const Header = () => {
         method: "post",
         withCredentials: true,
       });
-      queryClient.invalidateQueries({ queryKey: ["userInfo"] });
+      queryClient.refetchQueries({ queryKey: ["userInfo"] });
       toast.success("Logged out");
     } catch (error) {
       toast.error("Unable to logout");
-      console.log(error);
     }
   };
+  const tokenQuery = useTokenValidation();
 
   const username = tokenQuery.data?.username;
 
@@ -39,7 +35,9 @@ const Header = () => {
       <nav className="flex gap-5">
         {(tokenQuery.isLoading ||
           tokenQuery.isRefetching ||
-          tokenQuery.isFetching) && <div>checking token...</div>}
+          tokenQuery.isFetching) && (
+          <div className="animate-pulse">checking token...</div>
+        )}
         {tokenQuery.isSuccess && (
           <>
             <Link

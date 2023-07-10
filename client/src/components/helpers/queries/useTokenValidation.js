@@ -13,7 +13,6 @@ export const useTokenValidation = () => {
   return useQuery({
     queryFn: verifyToken,
     queryKey: ["userInfo"],
-    refetchInterval: false,
     retry: 2,
   });
 };

@@ -1,12 +1,13 @@
+import axios from "axios";
 import { useState } from "react";
 import { Toaster } from "react-hot-toast";
-import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 
 const Register = () => {
   const [user, setUser] = useState("");
   const [pass, setPass] = useState("");
-
+  const navigate = useNavigate();
   const [usernameErr, setUsernameErr] = useState("");
   const queryClient = useQueryClient();
   const handleRegister = async (e) => {
@@ -24,9 +25,10 @@ const Register = () => {
         withCredentials: true,
         headers: { "Content-Type": "application/json" },
       });
-      queryClient.invalidateQueries({ queryKey: ["userInfo"] });
-      // navigate("/");
+      queryClient.refetchQueries({ queryKey: ["userInfo"] });
+      navigate("/");
     } catch (error) {
+      setUsernameErr(error.message);
       console.log({ error });
     }
   };
