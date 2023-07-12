@@ -1,77 +1,83 @@
 import express from "express";
 import PostModel from "../models/Post.js";
-import multer from "multer";
-import fs from "fs";
 import { verifyjwt } from "../middlewares/verifyjwt.js";
 import UserModel from "../models/User.js";
 
-const upload = multer({ dest: "uploads/" });
 const router = express.Router();
 
-router.post("/", [verifyjwt, upload.single("cover")], async (req, res) => {
-  const { originalname, path } = req.file;
-  const parts = originalname.split(".");
-  const newName = path + "." + parts[parts.length - 1];
-  fs.renameSync(path, newName);
+router.post("/", verifyjwt, async (req, res) => {
+  const { title, subtitle, content, cover } = req.body;
+  if (!title || !subtitle || !content || !cover) res.sendStatus(404);
 
-  const { title, subtitle, content } = req.body;
-  const { _id } = await PostModel.create({
+  const newPostDoc = await PostModel.create({
     author: req.userInfo.id,
     title,
     subtitle,
     content,
-    cover: newName,
+    cover,
   });
-  res.status(200).json({ id: _id });
+  res.status(200).json({ post: newPostDoc });
 });
 
-router.put("/", [verifyjwt, upload.single("cover")], async (req, res) => {
+router.put("/", verifyjwt, async (req, res) => {
   const postDoc = await PostModel.findById(req.body.postId);
-  if (req.userInfo.id != postDoc.author) res.status(403);
-  let newPath = null;
-  if (req.file) {
-    const { originalname, path } = req.file;
-    const parts = originalname.split(".");
-    newPath = path + "." + parts[parts.length - 1];
-    fs.renameSync(path, newPath);
-  }
-  const { title, subtitle, content } = req.body;
+  if (!postDoc) return res.sendStatus(404);
+  if (req.userInfo.id != postDoc.author) return res.sendStatus(403);
+
+  const { title, subtitle, content, cover } = req.body;
+  if (!title || !subtitle || !content || !cover) res.sendStatus(404);
+
   postDoc.title = title;
   postDoc.subtitle = subtitle;
   postDoc.content = content;
-  postDoc.cover = newPath ?? postDoc.cover;
+  postDoc.cover = cover;
 
   await postDoc.save();
   res.status(200).json(postDoc);
 });
 
 router.delete("/", verifyjwt, async (req, res) => {
-  const postDoc = await PostModel.findById(req.body.postId);
-  if (req.userInfo.id != postDoc.author) res.status(403);
-  await PostModel.deleteOne({ _id: req.body.postId });
-  res.status(200).json("deleted");
+  const { postId } = req.body;
+  if (!postId) res.sendStatus(404);
+
+  const postDoc = await PostModel.findById(postId);
+  if (req.userInfo.id != postDoc.author) res.sendStatus(403);
+
+  await PostModel.deleteOne({ _id: postId });
+  res.sendStatus(200);
 });
 
-router.get("/", async (_, res) => {
+router.get("/all", async (req, res) => {
+  const resultsPerPage = req.query.limit ?? 2;
+  const page = req.query.page >= 1 ? req.query.page : 0;
+
   const posts = await PostModel.find()
     .populate("author", ["username"])
     .sort({ createdAt: -1 })
-    .limit(10)
+    .limit(resultsPerPage)
+    .skip(resultsPerPage * page)
     .select("author title subtitle cover createdAt");
-  res.json(posts);
+  const count = await PostModel.countDocuments();
+  res.json({ posts, count });
 });
+
 router.get("/author/:authorName", async (req, res) => {
+  const resultsPerPage = req.query.limit ?? 2;
+  const page = req.query.page >= 1 ? req.query.page : 0;
+
   const authorDoc = await UserModel.findOne({
     username: req.params.authorName,
   });
-  if (!authorDoc) res.status(404);
+  if (authorDoc == null) res.sendStatus(404);
 
   const posts = await PostModel.find({ author: authorDoc._id })
     .populate("author", ["username"])
     .sort({ createdAt: -1 })
-    .limit(10)
+    .limit(resultsPerPage)
+    .skip(resultsPerPage * page)
     .select("author title subtitle cover createdAt");
-  res.json(posts);
+  const count = await PostModel.countDocuments({ author: authorDoc._id });
+  res.json({ posts, count });
 });
 
 router.get("/:id", async (req, res) => {
@@ -83,7 +89,7 @@ router.get("/:id", async (req, res) => {
     if (postDoc == null) throw new Error();
     res.json(postDoc);
   } catch (error) {
-    res.status(404).json("Post not found");
+    res.sendStatus(404);
   }
 });
 

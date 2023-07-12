@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useState } from "react";
-import { Toaster } from "react-hot-toast";
+import { toast, Toaster } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -17,6 +17,10 @@ const Register = () => {
       setUsernameErr("Username should be atleast 4 characters");
       return null;
     }
+    if (pass.length < 6) {
+      toast.error("Password length should be atleast 6");
+      return;
+    }
     try {
       await axios({
         url: "/auth/register",
@@ -26,7 +30,7 @@ const Register = () => {
         headers: { "Content-Type": "application/json" },
       });
       queryClient.refetchQueries({ queryKey: ["userInfo"] });
-      navigate("/");
+      navigate("/login");
     } catch (error) {
       setUsernameErr(error.message);
       console.log({ error });
@@ -48,6 +52,8 @@ const Register = () => {
           </label>
           <input
             type="text"
+            minlength="4"
+            maxlength="10"
             className="auth-input-control"
             value={user}
             autoFocus
@@ -67,6 +73,8 @@ const Register = () => {
           </label>
           <input
             type="password"
+            minlength="6"
+            maxlength="24"
             className="auth-input-control"
             value={pass}
             onChange={(e) => setPass(e.target.value)}

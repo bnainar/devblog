@@ -5,6 +5,7 @@ import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useFetchPostInfo } from "../helpers/queries/useFetchPostInfo";
+import rehypeSanitize from "rehype-sanitize";
 
 function EditPost() {
   const { id } = useParams();
@@ -12,7 +13,7 @@ function EditPost() {
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const [content, setContent] = useState("");
-  const [files, setFiles] = useState("");
+  const [cover, setCover] = useState("");
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   useEffect(() => {
@@ -20,15 +21,18 @@ function EditPost() {
       setTitle(post.title);
       setSubtitle(post.subtitle);
       setContent(post.content);
+      setCover(post.cover);
     }
   }, [post, isLoading]);
 
   const editPostMutationFn = (data) => {
+    console.log(data);
     return axios({
       url: "/post",
       method: "put",
       data,
       withCredentials: true,
+      headers: { "Content-Type": "application/json" },
     });
   };
 
@@ -41,13 +45,9 @@ function EditPost() {
   });
   const handleSubmit = (e) => {
     e.preventDefault();
-    const formdata = new FormData();
-    formdata.append("title", title);
-    formdata.append("subtitle", subtitle);
-    formdata.append("content", content);
-    formdata.append("postId", post._id);
-    if (files?.[0]) formdata.append("cover", files[0]);
-    editPostMutation.mutate(formdata);
+    editPostMutation.mutate(
+      JSON.stringify({ postId: id, title, subtitle, cover, content })
+    );
   };
   if (isLoading) return <div className="animate-pulse">Loading...</div>;
   if (isError) return <div>Unable to fetch Post info</div>;
@@ -89,13 +89,22 @@ function EditPost() {
             Cover Image
           </label>
           <input
-            type="file"
-            className="file-input mt-3 w-full"
-            onChange={(e) => setFiles(e.target.files)}
+            type="url"
+            className="auth-input-control"
+            required
+            value={cover}
+            onChange={(e) => setCover(e.target.value)}
           />
         </div>
         <div className="w-3/4 mt-5 bg-white">
-          <MDEditor value={content} onChange={setContent} height={400} />
+          <MDEditor
+            value={content}
+            onChange={setContent}
+            height={400}
+            previewOptions={{
+              rehypePlugins: [[rehypeSanitize]],
+            }}
+          />
         </div>
         <input
           type="submit"

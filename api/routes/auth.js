@@ -8,15 +8,15 @@ const router = express.Router();
 
 router.post("/register", async (req, res) => {
   const { username, password } = req.body;
+  if (!username || username.length < 4 || !password || password.length < 6)
+    res.sendStatus(400);
   try {
     const salt = await bcrypt.genSalt();
-    const userDoc = await UserModel.create({
+    await UserModel.create({
       username,
       passwordhash: bcrypt.hashSync(password, salt),
     });
-    console.log("New User created");
-    console.log(userDoc);
-    res.status(200).json("ok");
+    res.sendStatus(200);
   } catch (e) {
     res.status(400).json(e);
   }
@@ -24,10 +24,11 @@ router.post("/register", async (req, res) => {
 
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
+  if (!username || username.length < 4 || !password || password.length < 6)
+    res.sendStatus(400);
   try {
     const userDoc = await UserModel.findOne({ username });
     if (!userDoc) throw new Error("Non-existent user");
-    console.log(userDoc);
 
     // checking passwords
     const comparePass = await bcrypt.compare(password, userDoc.passwordhash);

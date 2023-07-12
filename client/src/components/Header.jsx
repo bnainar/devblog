@@ -46,12 +46,17 @@ const Header = () => {
             >
               Create new Post
             </Link>
-            <span
-              onClick={() => logout()}
-              className="hover:underline hover:decoration-red-500 hover:decoration-2 cursor-pointer"
+            <Link
+              to={`/author/${username}`}
+              className="hover:underline hover:decoration-orange-400 hover:decoration-2"
             >
               {username}
-              <span className="text-slate-500"> (Logout)</span>
+            </Link>
+            <span
+              onClick={() => logout()}
+              className="text-slate-500 hover:underline hover:decoration-red-500 hover:decoration-2 cursor-pointer"
+            >
+              Logout
             </span>
           </>
         )}

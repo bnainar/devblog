@@ -8,10 +8,10 @@ const getPostInfo = async (id) => {
 export const useFetchPostInfo = (id) => {
   const queryClient = useQueryClient();
   return useQuery({
-    queryKey: ["post", id],
+    queryKey: ["post", { id }],
     queryFn: () => getPostInfo(id),
     retry: 2,
     initialData: () =>
-      queryClient.getQueryData(["post"])?.find((post) => post._id === id),
+      queryClient.getQueryData(["posts"])?.find((post) => post._id === id),
   });
 };

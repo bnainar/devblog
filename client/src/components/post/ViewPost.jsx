@@ -1,10 +1,12 @@
 import axios from "axios";
 import { useState } from "react";
-import TimeAgo from "react-timeago";
+import { format } from "date-fns";
+import { toast, Toaster } from "react-hot-toast";
 import { Link } from "react-router-dom";
 import ViewPostLoading from "./loading";
 import { Dialog } from "@headlessui/react";
 import MDEditor from "@uiw/react-md-editor";
+import rehypeSanitize from "rehype-sanitize";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { useFetchPostInfo } from "../helpers/queries/useFetchPostInfo";
@@ -21,13 +23,14 @@ function ViewPost() {
     try {
       await axios({
         url: "/post",
+        method: "delete",
         data: { postId: postInfo._id },
         withCredentials: true,
-        method: "delete",
       });
       navigate("/");
     } catch (error) {
-      console.log(error);
+      setIsOpen(false);
+      toast.error("Unable to delete post");
     }
   };
 
@@ -37,6 +40,7 @@ function ViewPost() {
   if (!postInfo) return <ViewPostLoading />;
   return (
     <>
+      <Toaster />
       <Dialog
         open={isOpen}
         onClose={() => setIsOpen(false)}
@@ -47,7 +51,7 @@ function ViewPost() {
           aria-hidden="true"
         />
         <div className="fixed inset-0 flex items-center justify-center p-4 ">
-          <Dialog.Panel className="w-full max-w-sm rounded bg-[#0d1117] px-5 py-5">
+          <Dialog.Panel className="w-full max-w-sm rounded-lg bg-[#0d1117] px-5 py-5 shadow-lg">
             <Dialog.Title
               as="h3"
               className="text-xl font-medium leading-6 text-gray-200"
@@ -60,16 +64,16 @@ function ViewPost() {
             </div>
             <div className="flex flex-row justify-end gap-5 mt-4">
               <button
-                onClick={() => deletePost()}
-                className="bg-red-500 text-white px-5 py-2 rounded-md hover:bg-red-600 shadow-sm"
-              >
-                Delete
-              </button>
-              <button
                 onClick={() => setIsOpen(false)}
-                className="bg-slate-200 text-black px-5 py-2 rounded-md hover:bg-slate-300"
+                className="text-gray-500 px-5 py-2 rounded-md hover:text-gray-200 focus:outline-none focus:ring-2 focus:ring-slate-800"
               >
                 Cancel
+              </button>
+              <button
+                onClick={() => deletePost()}
+                className="bg-red-600 text-white px-5 py-2 rounded-md hover:bg-red-700 shadow-sm"
+              >
+                Delete
               </button>
             </div>
           </Dialog.Panel>
@@ -84,7 +88,7 @@ function ViewPost() {
           {postInfo.subtitle}
         </span>
         <img
-          src={`http://localhost:4000/${postInfo.cover}`}
+          src={postInfo.cover}
           alt="Post cover"
           onError={(e) => (e.target.style.display = "none")}
           className="rounded-lg shadow-sm m-auto object-cover h-64"
@@ -92,14 +96,12 @@ function ViewPost() {
 
         <div className="flex gap-5 justify-center text-slate-600 mt-5">
           <span
-            onClick={() => navigate(`/author/${postInfo.author.username}`)}
+            onClick={() => navigate(`/author/${postInfo.author?.username}`)}
             className="hover:underline hover:cursor-pointer"
           >
-            @{postInfo.author.username}
+            @{postInfo.author?.username}
           </span>
-          <time>
-            <TimeAgo date={postInfo.createdAt} />
-          </time>
+          <time>{format(new Date(postInfo.createdAt), "MMM d, y")}</time>
           {tokenQuery.isSuccess &&
             tokenQuery.data.id === postInfo.author._id && (
               <span
@@ -120,6 +122,7 @@ function ViewPost() {
               source={postInfo.content}
               style={{ whiteSpace: "pre-wrap" }}
               className="md:px-5"
+              rehypePlugins={[[rehypeSanitize]]}
             />
           ) : (
             <p className="text-white animate-pulse text-center">

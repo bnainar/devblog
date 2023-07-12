@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 import { sampleContent } from "../helpers/sampleContent";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import rehypeSanitize from "rehype-sanitize";
 
 function CreatePostPage() {
   const navigate = useNavigate();
@@ -12,16 +13,17 @@ function CreatePostPage() {
   const [title, setTitle] = useState("");
   const [subtitle, setSubtitle] = useState("");
   const [content, setContent] = useState(sampleContent);
-  const [files, setFiles] = useState("");
+  const [cover, setCover] = useState("");
 
   const queryClient = useQueryClient();
 
-  const newPostMutation = (formdata) => {
+  const newPostMutation = (data) => {
     return axios({
       url: "/post",
       method: "post",
-      data: formdata,
+      data,
       withCredentials: true,
+      headers: { "Content-Type": "application/json" },
     });
   };
 
@@ -34,16 +36,11 @@ function CreatePostPage() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const formdata = new FormData();
-    formdata.append("title", title);
-    formdata.append("subtitle", subtitle);
-    formdata.append("content", content);
-    formdata.append("cover", files[0]);
-    postMutation.mutate(formdata);
+    postMutation.mutate(JSON.stringify({ title, subtitle, cover, content }));
   };
 
   if (postMutation.isSuccess) {
-    navigate(`/post/${postMutation.data.data.id}`);
+    navigate(`/post/${postMutation.data.data.post._id}`);
   }
   if (postMutation.isError) {
     toast.error("Unable to add post");
@@ -84,17 +81,25 @@ function CreatePostPage() {
         </div>
         <div className="w-3/4 mt-4">
           <label htmlFor="coverimg" className="py-4 pt-2 font-semibold text-lg">
-            Cover Image
+            Cover Image URL
           </label>
           <input
-            type="file"
-            className="file-input mt-3 w-full"
+            type="url"
+            className="auth-input-control"
             required
-            onChange={(e) => setFiles(e.target.files)}
+            value={cover}
+            onChange={(e) => setCover(e.target.value)}
           />
         </div>
         <div className="w-3/4 mt-5 bg-white">
-          <MDEditor value={content} onChange={setContent} height={400} />
+          <MDEditor
+            value={content}
+            onChange={setContent}
+            height={400}
+            previewOptions={{
+              rehypePlugins: [[rehypeSanitize]],
+            }}
+          />
         </div>
         <input
           type="submit"

@@ -1,10 +1,9 @@
 import Login from "./components/auth/Login";
 import Layout from "./components/Layout";
-import HomePage from "./components/HomePage";
 import Register from "./components/auth/Register";
 import ViewPost from "./components/post/ViewPost";
 import EditPost from "./components/post/EditPost";
-import UserPosts from "./components/post/UserPosts";
+import { PostList } from "./components/post/PostList";
 import CreatePostPage from "./components/post/CreatePostPage";
 import { Route, Routes } from "react-router-dom";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
@@ -16,11 +15,11 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <Routes>
         <Route path="/" element={<Layout />}>
-          <Route index element={<HomePage />} />
+          <Route index element={<PostList homePage={true} />} />
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
           <Route path="new" element={<CreatePostPage />} />
-          <Route path="/author/:username" element={<UserPosts />} />
+          <Route path="/author/:username" element={<PostList />} />
           <Route path="post/:id" element={<ViewPost />} />
           <Route path="post/edit/:id" element={<EditPost />} />
           <Route

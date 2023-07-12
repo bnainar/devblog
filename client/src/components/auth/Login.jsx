@@ -14,8 +14,7 @@ const Login = () => {
     e.preventDefault();
 
     if (user.length < 4 || pass.length < 6) {
-      toast.error("Enter valid credentials");
-      // throw new Error("invalid creds");
+      toast.error("Username should be atleast 4 chars long and 6 for password");
       return;
     }
     try {
