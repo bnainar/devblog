@@ -58,7 +58,9 @@ router.get("/all", async (req, res) => {
     .skip(resultsPerPage * page)
     .select("author title subtitle cover createdAt");
   const count = await PostModel.countDocuments();
-  res.json({ posts, count });
+  const hasNextPage = resultsPerPage * (page + 1) < count;
+  const nextPageCursor = hasNextPage ? page + 1 : null;
+  res.json({ posts, count, nextPageCursor });
 });
 
 router.get("/author/:authorName", async (req, res) => {
@@ -77,7 +79,9 @@ router.get("/author/:authorName", async (req, res) => {
     .skip(resultsPerPage * page)
     .select("author title subtitle cover createdAt");
   const count = await PostModel.countDocuments({ author: authorDoc._id });
-  res.json({ posts, count });
+  const hasNextPage = resultsPerPage * (page + 1) < count;
+  const nextPageCursor = hasNextPage ? page + 1 : null;
+  res.json({ posts, count, nextPageCursor });
 });
 
 router.get("/:id", async (req, res) => {

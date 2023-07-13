@@ -14,7 +14,8 @@ const Header = () => {
         method: "post",
         withCredentials: true,
       });
-      queryClient.refetchQueries({ queryKey: ["userInfo"] });
+      queryClient.invalidateQueries({ queryKey: ["userInfo"] });
+      queryClient.setQueryData(["userInfo"], null);
       toast.success("Logged out");
     } catch (error) {
       toast.error("Unable to logout");

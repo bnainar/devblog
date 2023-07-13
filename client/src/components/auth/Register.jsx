@@ -1,6 +1,9 @@
 import axios from "axios";
 import { useState } from "react";
 import { toast, Toaster } from "react-hot-toast";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { registerSchema } from "../helpers/zodSchemas";
 import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -8,32 +11,32 @@ const Register = () => {
   const [user, setUser] = useState("");
   const [pass, setPass] = useState("");
   const navigate = useNavigate();
-  const [usernameErr, setUsernameErr] = useState("");
+  // const [usernameErr, setUsernameErr] = useState("");
   const queryClient = useQueryClient();
-  const handleRegister = async (e) => {
-    e.preventDefault();
 
-    if (user.length < 4) {
-      setUsernameErr("Username should be atleast 4 characters");
-      return null;
-    }
-    if (pass.length < 6) {
-      toast.error("Password length should be atleast 6");
-      return;
-    }
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(registerSchema),
+  });
+  const handleRegister = async (data) => {
     try {
       await axios({
         url: "/auth/register",
         method: "post",
-        data: JSON.stringify({ username: user, password: pass }),
+        data: JSON.stringify(data),
         withCredentials: true,
         headers: { "Content-Type": "application/json" },
       });
       queryClient.refetchQueries({ queryKey: ["userInfo"] });
       navigate("/login");
     } catch (error) {
-      setUsernameErr(error.message);
-      console.log({ error });
+      if (error.response?.data?.code === 11000) {
+        return toast.error("Username already exists");
+      }
+      toast.error("Failed to login");
     }
   };
   return (
@@ -41,7 +44,7 @@ const Register = () => {
       <Toaster />
       <form
         className="w-full flex items-center flex-col text-slate-200"
-        onSubmit={handleRegister}
+        onSubmit={handleSubmit(handleRegister)}
       >
         <h2 className="text-4xl font-semibold mb-10 text-slate-100">
           Create a new Account
@@ -52,20 +55,12 @@ const Register = () => {
           </label>
           <input
             type="text"
-            minlength="4"
-            maxlength="10"
             className="auth-input-control"
-            value={user}
-            autoFocus
-            onChange={(e) => setUser(e.target.value)}
-            required
+            {...register("username")}
           />
-          <span
-            hidden={usernameErr === ""}
-            className="text-red-500 text-sm mb-2 block"
-          >
-            {usernameErr}
-          </span>
+          {errors.username?.message && (
+            <p className="text-red-400">{errors.username?.message}</p>
+          )}
         </div>
         <div className="w-3/4 md:w-64">
           <label htmlFor="password" className="py-4 pt-2 font-semibold text-lg">
@@ -73,13 +68,25 @@ const Register = () => {
           </label>
           <input
             type="password"
-            minlength="6"
-            maxlength="24"
             className="auth-input-control"
-            value={pass}
-            onChange={(e) => setPass(e.target.value)}
-            required
+            {...register("password")}
           />
+          {errors.password?.message && (
+            <p className="text-red-400">{errors.password?.message}</p>
+          )}
+        </div>
+        <div className="w-3/4 md:w-64">
+          <label htmlFor="password" className="py-4 pt-2 font-semibold text-lg">
+            Confirm Password
+          </label>
+          <input
+            type="password"
+            className="auth-input-control"
+            {...register("confirmpassword")}
+          />
+          {errors.confirmpassword?.message && (
+            <p className="text-red-400">{errors.confirmpassword?.message}</p>
+          )}
         </div>
         <input
           type="submit"

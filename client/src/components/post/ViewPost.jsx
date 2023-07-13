@@ -103,7 +103,7 @@ function ViewPost() {
           </span>
           <time>{format(new Date(postInfo.createdAt), "MMM d, y")}</time>
           {tokenQuery.isSuccess &&
-            tokenQuery.data.id === postInfo.author._id && (
+            tokenQuery.data?.id === postInfo.author._id && (
               <span
                 onClick={() => setIsOpen(true)}
                 className="hover:underline hover:cursor-pointer"
@@ -112,7 +112,7 @@ function ViewPost() {
               </span>
             )}
           {tokenQuery.isSuccess &&
-            tokenQuery.data.id === postInfo.author._id && (
+            tokenQuery.data?.id === postInfo.author._id && (
               <Link to={`/post/edit/${postInfo._id}`}>edit</Link>
             )}
         </div>
