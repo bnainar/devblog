@@ -24,3 +24,12 @@ export const registerSchema = z
     message: "Passwords don't match",
     path: ["confirmpassword"],
   });
+
+export const postSchema = z.object({
+  title: z.string().min(4, { message: "Title should be atleast 4 chars long" }),
+  subtitle: z
+    .string()
+    .min(4, { message: "Subtitle should be atleast 4 chars long" }),
+  cover: z.string().url("Cover img should be a valid URL"),
+  content: z.string().nonempty("Content should be non-empty"),
+});

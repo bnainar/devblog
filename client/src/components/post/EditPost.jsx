@@ -1,36 +1,35 @@
 import axios from "axios";
 import MDEditor from "@uiw/react-md-editor";
-import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useFetchPostInfo } from "../helpers/queries/useFetchPostInfo";
 import rehypeSanitize from "rehype-sanitize";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { postSchema } from "../helpers/zodSchemas";
 
 function EditPost() {
   const { id } = useParams();
-  const { data: post, isLoading, isError } = useFetchPostInfo(id);
-  const [title, setTitle] = useState("");
-  const [subtitle, setSubtitle] = useState("");
-  const [content, setContent] = useState("");
-  const [cover, setCover] = useState("");
+  const postQuery = useFetchPostInfo(id);
+
+  const { data: post } = postQuery;
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(postSchema),
+  });
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  useEffect(() => {
-    if (post) {
-      setTitle(post.title);
-      setSubtitle(post.subtitle);
-      setContent(post.content);
-      setCover(post.cover);
-    }
-  }, [post, isLoading]);
 
   const editPostMutationFn = (data) => {
-    console.log(data);
+    data.postId = id;
     return axios({
       url: "/post",
       method: "put",
-      data,
+      data: JSON.stringify(data),
       withCredentials: true,
       headers: { "Content-Type": "application/json" },
     });
@@ -43,19 +42,14 @@ function EditPost() {
       navigate(`/post/${id}`);
     },
   });
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    editPostMutation.mutate(
-      JSON.stringify({ postId: id, title, subtitle, cover, content })
-    );
-  };
-  if (isLoading) return <div className="animate-pulse">Loading...</div>;
-  if (isError) return <div>Unable to fetch Post info</div>;
+  if (postQuery.isLoading)
+    return <div className="animate-pulse">Loading...</div>;
+  if (postQuery.isError) return <div>Unable to fetch Post info</div>;
   return (
     <>
       <form
         className="w-full flex items-center flex-col text-slate-200"
-        onSubmit={handleSubmit}
+        onSubmit={handleSubmit((data) => editPostMutation.mutate(data))}
       >
         <h2 className="text-3xl font-semibold mb-10 text-slate-100">
           Edit Post
@@ -67,10 +61,12 @@ function EditPost() {
           <input
             type="text"
             className="auth-input-control"
-            required
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            {...register("title")}
+            defaultValue={post.title}
           />
+          {errors.title?.message && (
+            <p className="text-red-400">{errors.title?.message}</p>
+          )}
         </div>
         <div className="w-3/4 ">
           <label htmlFor="subtitle" className="py-4 pt-2 font-semibold text-lg">
@@ -79,10 +75,12 @@ function EditPost() {
           <input
             type="text"
             className="auth-input-control"
-            required
-            value={subtitle}
-            onChange={(e) => setSubtitle(e.target.value)}
+            {...register("subtitle")}
+            defaultValue={post.subtitle}
           />
+          {errors.subtitle?.message && (
+            <p className="text-red-400">{errors.subtitle?.message}</p>
+          )}
         </div>
         <div className="w-3/4 mt-4">
           <label htmlFor="coverimg" className="py-4 pt-2 font-semibold text-lg">
@@ -91,25 +89,35 @@ function EditPost() {
           <input
             type="url"
             className="auth-input-control"
-            required
-            value={cover}
-            onChange={(e) => setCover(e.target.value)}
+            {...register("cover")}
+            defaultValue={post.cover}
           />
+          {errors.cover?.message && (
+            <p className="text-red-400">{errors.cover?.message}</p>
+          )}
         </div>
-        <div className="w-3/4 mt-5 bg-white">
-          <MDEditor
-            value={content}
-            onChange={setContent}
-            height={400}
-            previewOptions={{
-              rehypePlugins: [[rehypeSanitize]],
-            }}
+        <div className="w-3/4 mt-5">
+          <Controller
+            render={({ field }) => (
+              <MDEditor
+                {...field}
+                height={400}
+                previewOptions={{
+                  rehypePlugins: [[rehypeSanitize]],
+                }}
+              />
+            )}
+            control={control}
+            name="content"
+            defaultValue={post.content}
           />
+          {errors.content?.message && (
+            <p className="text-red-400 mt-3">{errors.content?.message}</p>
+          )}
         </div>
         <input
           type="submit"
           value="Submit"
-          disabled={false}
           className="bg-green-600 text-white bg-blend-lighten font-semibold mb-7 mt-10 py-2 px-5 w-3/4 md:w-64 rounded-md shadow-sm hover:shadow-lg cursor-pointer"
         />
       </form>

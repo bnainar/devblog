@@ -1,5 +1,4 @@
 import axios from "axios";
-import { useState } from "react";
 import { toast, Toaster } from "react-hot-toast";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -8,10 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 
 const Register = () => {
-  const [user, setUser] = useState("");
-  const [pass, setPass] = useState("");
   const navigate = useNavigate();
-  // const [usernameErr, setUsernameErr] = useState("");
   const queryClient = useQueryClient();
 
   const {

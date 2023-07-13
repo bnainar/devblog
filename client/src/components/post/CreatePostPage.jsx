@@ -1,19 +1,24 @@
 import axios from "axios";
-import { useState } from "react";
 import MDEditor from "@uiw/react-md-editor";
 import { useNavigate } from "react-router-dom";
 import toast, { Toaster } from "react-hot-toast";
 import { sampleContent } from "../helpers/sampleContent";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { postSchema } from "../helpers/zodSchemas";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import rehypeSanitize from "rehype-sanitize";
 
 function CreatePostPage() {
   const navigate = useNavigate();
-
-  const [title, setTitle] = useState("");
-  const [subtitle, setSubtitle] = useState("");
-  const [content, setContent] = useState(sampleContent);
-  const [cover, setCover] = useState("");
+  const {
+    register,
+    handleSubmit,
+    control,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(postSchema),
+  });
 
   const queryClient = useQueryClient();
 
@@ -21,7 +26,7 @@ function CreatePostPage() {
     return axios({
       url: "/post",
       method: "post",
-      data,
+      data: JSON.stringify(data),
       withCredentials: true,
       headers: { "Content-Type": "application/json" },
     });
@@ -34,11 +39,6 @@ function CreatePostPage() {
     },
   });
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    postMutation.mutate(JSON.stringify({ title, subtitle, cover, content }));
-  };
-
   if (postMutation.isSuccess) {
     navigate(`/post/${postMutation.data.data.post._id}`);
   }
@@ -50,7 +50,7 @@ function CreatePostPage() {
       <Toaster />
       <form
         className="w-full flex items-center flex-col text-slate-200"
-        onSubmit={(e) => handleSubmit(e)}
+        onSubmit={handleSubmit((data) => postMutation.mutate(data))}
       >
         <h2 className="text-3xl font-semibold mb-10 text-slate-100">
           Add new Post
@@ -62,10 +62,11 @@ function CreatePostPage() {
           <input
             type="text"
             className="auth-input-control"
-            required
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            {...register("title")}
           />
+          {errors.title?.message && (
+            <p className="text-red-400">{errors.title?.message}</p>
+          )}
         </div>
         <div className="w-3/4 ">
           <label htmlFor="subtitle" className="py-4 pt-2 font-semibold text-lg">
@@ -74,10 +75,11 @@ function CreatePostPage() {
           <input
             type="text"
             className="auth-input-control"
-            required
-            value={subtitle}
-            onChange={(e) => setSubtitle(e.target.value)}
+            {...register("subtitle")}
           />
+          {errors.subtitle?.message && (
+            <p className="text-red-400">{errors.subtitle?.message}</p>
+          )}
         </div>
         <div className="w-3/4 mt-4">
           <label htmlFor="coverimg" className="py-4 pt-2 font-semibold text-lg">
@@ -86,20 +88,30 @@ function CreatePostPage() {
           <input
             type="url"
             className="auth-input-control"
-            required
-            value={cover}
-            onChange={(e) => setCover(e.target.value)}
+            {...register("cover")}
           />
+          {errors.cover?.message && (
+            <p className="text-red-400">{errors.cover?.message}</p>
+          )}
         </div>
-        <div className="w-3/4 mt-5 bg-white">
-          <MDEditor
-            value={content}
-            onChange={setContent}
-            height={400}
-            previewOptions={{
-              rehypePlugins: [[rehypeSanitize]],
-            }}
+        <div className="w-3/4 mt-5">
+          <Controller
+            render={({ field }) => (
+              <MDEditor
+                {...field}
+                height={400}
+                previewOptions={{
+                  rehypePlugins: [[rehypeSanitize]],
+                }}
+              />
+            )}
+            control={control}
+            name="content"
+            defaultValue={sampleContent}
           />
+          {errors.content?.message && (
+            <p className="text-red-400 mt-3">{errors.content?.message}</p>
+          )}
         </div>
         <input
           type="submit"

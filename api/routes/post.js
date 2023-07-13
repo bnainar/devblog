@@ -3,11 +3,13 @@ import PostModel from "../models/Post.js";
 import { verifyjwt } from "../middlewares/verifyjwt.js";
 import UserModel from "../models/User.js";
 
+import { postSchema } from "../schemas/zodSchemas.js";
+import { validateSchema } from "../middlewares/validateSchema.js";
+
 const router = express.Router();
 
-router.post("/", verifyjwt, async (req, res) => {
+router.post("/", [verifyjwt, validateSchema(postSchema)], async (req, res) => {
   const { title, subtitle, content, cover } = req.body;
-  if (!title || !subtitle || !content || !cover) res.sendStatus(404);
 
   const newPostDoc = await PostModel.create({
     author: req.userInfo.id,
@@ -19,13 +21,14 @@ router.post("/", verifyjwt, async (req, res) => {
   res.status(200).json({ post: newPostDoc });
 });
 
-router.put("/", verifyjwt, async (req, res) => {
+router.put("/", [verifyjwt, validateSchema(postSchema)], async (req, res) => {
+  if (!req.body?.postId) return res.sendStatus(404);
+
   const postDoc = await PostModel.findById(req.body.postId);
   if (!postDoc) return res.sendStatus(404);
   if (req.userInfo.id != postDoc.author) return res.sendStatus(403);
 
   const { title, subtitle, content, cover } = req.body;
-  if (!title || !subtitle || !content || !cover) res.sendStatus(404);
 
   postDoc.title = title;
   postDoc.subtitle = subtitle;
@@ -67,6 +70,7 @@ router.get("/author/:authorName", async (req, res) => {
   const resultsPerPage = req.query.limit ?? 2;
   const page = req.query.page >= 1 ? req.query.page : 0;
 
+  if (!req.params.authorName) res.sendStatus(400);
   const authorDoc = await UserModel.findOne({
     username: req.params.authorName,
   });
@@ -86,6 +90,7 @@ router.get("/author/:authorName", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   const { id } = req.params;
+  if (!id) res.sendStatus(400);
   try {
     const postDoc = await PostModel.findById(id).populate("author", [
       "username",
