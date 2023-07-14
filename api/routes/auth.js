@@ -35,10 +35,16 @@ router.post("/login", validateSchema(loginSchema), async (req, res) => {
     jwt.sign(
       { username, id: userDoc._id },
       process.env.JWT_SECRET,
-      {},
+      { expiresIn: 60000 },
       (err, token) => {
         if (err) throw new Error(err);
-        res.cookie("token", token).json({ id: userDoc._id, username });
+        res
+          .cookie("token", token, {
+            secure: true,
+            expires: new Date(Date.now() + 60000),
+            httpOnly: true,
+          })
+          .json({ id: userDoc._id, username });
         console.log({ token });
       }
     );

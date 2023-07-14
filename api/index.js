@@ -15,11 +15,15 @@ app.use(cookieParser());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@mernblog-cluster.1yz2pxk.mongodb.net/?retryWrites=true&w=majority`;
 
-mongoose.connect(uri).then(() => console.log("DB connected"));
+mongoose
+  .connect(uri)
+  .then(() => console.log("DB connected"))
+  .catch(console.log("Unable to connect to db"));
 
 app.get("/ping", (_, res) => res.json("pong"));
 
 app.use("/post", postRouter);
 app.use("/auth", authRouter);
 
-app.listen(4000);
+const PORT = process.env.PORT || 4000;
+app.listen(PORT);

@@ -9,7 +9,7 @@ const PostListItem = ({ _id, title, subtitle, cover, createdAt, author }) => {
             <div className="md:shrink-0 ">
               <img
                 src={cover}
-                alt=""
+                alt="Cover of Post"
                 className="w-full h-40 object-cover md:h-40 md:w-56 rounded-lg bg-slate-500 border-0 shadow-md"
               ></img>
             </div>
