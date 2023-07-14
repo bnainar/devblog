@@ -43,6 +43,8 @@ router.post("/login", validateSchema(loginSchema), async (req, res) => {
             secure: true,
             expires: new Date(Date.now() + 60000),
             httpOnly: true,
+            sameSite: "none",
+            domain: process.env.CLIENT_DOMAIN,
           })
           .json({ id: userDoc._id, username });
         console.log({ token });
