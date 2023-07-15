@@ -35,19 +35,17 @@ router.post("/login", validateSchema(loginSchema), async (req, res) => {
     jwt.sign(
       { username, id: userDoc._id },
       process.env.JWT_SECRET,
-      { expiresIn: 60000 },
+      { expiresIn: 180 },
       (err, token) => {
         if (err) throw new Error(err);
         res
           .cookie("token", token, {
             secure: true,
-            expires: new Date(Date.now() + 60000),
+            maxAge: 180000,
             httpOnly: true,
             sameSite: "none",
-            domain: process.env.CLIENT_DOMAIN,
           })
           .json({ id: userDoc._id, username });
-        console.log({ token });
       }
     );
   } catch (e) {
@@ -59,6 +57,15 @@ router.post("/login", validateSchema(loginSchema), async (req, res) => {
 // Validating token
 router.get("/token", verifyjwt, (req, res) => res.json(req.userInfo));
 
-router.post("/logout", (_, res) => res.cookie("token", "").sendStatus(200));
+router.post("/logout", (_, res) => {
+  res
+    .clearCookie("token", {
+      secure: true,
+      maxAge: 180000,
+      httpOnly: true,
+      sameSite: "none",
+    })
+    .sendStatus(200);
+});
 
 export default router;

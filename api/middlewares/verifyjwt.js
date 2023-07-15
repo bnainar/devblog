@@ -4,7 +4,7 @@ export const verifyjwt = (req, res, next) => {
 
   const { token } = req.cookies;
   jwt.verify(token, process.env.JWT_SECRET, {}, (err, info) => {
-    if (err || !info) return res.status(401).json("Invalid token");
+    if (err || !info) return res.status(401).json({ err });
     req.userInfo = info;
     next();
   });

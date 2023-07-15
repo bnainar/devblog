@@ -5,10 +5,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { loginSchema } from "../helpers/zodSchemas";
 import { useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 
 const Login = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     register,
@@ -20,6 +22,7 @@ const Login = () => {
 
   const handleLogin = async (formdata) => {
     try {
+      setIsLoading(true);
       const { data } = await axios({
         url: "/auth/login",
         method: "post",
@@ -31,6 +34,8 @@ const Login = () => {
       navigate("/");
     } catch (error) {
       toast.error("Wrong credentials");
+      setIsLoading(false);
+      console.log(error);
     }
   };
   return (
@@ -74,8 +79,9 @@ const Login = () => {
         </div>
         <input
           type="submit"
-          value="Login"
-          className="bg-purple-600 text-white font-semibold mt-5 py-2 px-5 w-3/4 md:w-64 rounded-md shadow-sm hover:shadow-lg hover:bg-purple-700 cursor-pointer"
+          value={isLoading ? "Logging in..." : "Login"}
+          disabled={isLoading}
+          className="bg-purple-600 disabled:bg-slate-700 text-white disabled:text-slate-400 font-semibold mt-5 py-2 px-5 w-3/4 md:w-64 rounded-md shadow-sm hover:shadow-lg hover:bg-purple-700 cursor-pointer"
         />
       </form>
     </>

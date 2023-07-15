@@ -1,15 +1,16 @@
+import { useState } from "react";
 import axios from "axios";
 import { toast, Toaster } from "react-hot-toast";
 import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerSchema } from "../helpers/zodSchemas";
-import { useNavigate } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 
 const Register = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-
+  const [isLoading, setIsLoading] = useState(false);
   const {
     register,
     handleSubmit,
@@ -19,6 +20,7 @@ const Register = () => {
   });
   const handleRegister = async (data) => {
     try {
+      setIsLoading(true);
       await axios({
         url: "/auth/register",
         method: "post",
@@ -29,6 +31,7 @@ const Register = () => {
       queryClient.refetchQueries({ queryKey: ["userInfo"] });
       navigate("/login");
     } catch (error) {
+      setIsLoading(false);
       if (error.response?.data?.code === 11000) {
         return toast.error("Username already exists");
       }
@@ -86,8 +89,9 @@ const Register = () => {
         </div>
         <input
           type="submit"
-          value="Register"
-          className="bg-green-600 text-white font-semibold mt-4 py-2 px-5 w-3/4 md:w-64 rounded-md shadow-sm hover:shadow-lg hover:bg-green-700 cursor-pointer"
+          value={isLoading ? "Registering..." : "Register"}
+          disabled={isLoading}
+          className="bg-green-600 disabled:bg-slate-700 disabled:text-slate-400 text-white font-semibold mt-4 py-2 px-5 w-3/4 md:w-64 rounded-md shadow-sm hover:shadow-lg hover:bg-green-700 cursor-pointer"
         />
       </form>
     </>
