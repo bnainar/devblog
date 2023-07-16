@@ -38,7 +38,8 @@ function EditPost() {
   const editPostMutation = useMutation({
     mutationFn: editPostMutationFn,
     onSuccess: (data) => {
-      queryClient.setQueryData(["post", { id }], data);
+      queryClient.invalidateQueries({ queryKey: ["post", { id }] });
+      // queryClient.setQueryData(["post", { id }], data);
       navigate(`/post/${id}`);
     },
   });

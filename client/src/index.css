@@ -4,7 +4,11 @@
 @layer components{
     body{
         background-color: #0d1117;
-    }    
+        
+    }   
+    ul{
+        @apply list-disc;
+    } 
     @media (min-width: 768px) { 
         body{
             width: calc(100vw - 34px);
